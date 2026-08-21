@@ -438,4 +438,69 @@ scale in gradually on market pullbacks
     expect(text).not.toContain('Financial JSON');
     expect(text).not.toContain('--- ### 🔍 Live Data Sources & Verification');
   });
+
+  it('Case 12: "tell me about TCS" -> Valid stock but missing fundamentals results in null category scores', async () => {
+    // Mock the TCS profile but return missing financials
+    const tcsProfile = {
+      profile: {
+        symbol: 'TCS',
+        companyName: 'Tata Consultancy Services',
+        exchange: 'NSE',
+      },
+      quote: {
+        currentPrice: 3800,
+      }
+    };
+    const tcsFinancials = {
+      symbol: 'TCS',
+      // Missing ROE, debtToEquity, etc.
+    };
+
+    const report = scoreEngine.calculateScore(tcsProfile.profile, tcsProfile.quote, tcsFinancials);
+    // Because it's missing metrics, the scores should be null, not 5.0
+    expect(report.categories.financialHealth.score).toBeNull();
+    expect(report.categories.capitalEfficiency.score).toBeNull();
+    // And breakdown string should output Not Available
+    expect(report.ratingCalculationBreakdown?.financialHealth).toBe('Not Available');
+  });
+
+  it('Case 13: "can you suggest the stocks for investing top 10 stocks" -> Handled as general intent without single-stock routing', async () => {
+    const decision = await router.routeAndExecute('can you suggest the stocks for investing top 10 stocks', 'req-case-13');
+    expect(decision.detectedIntent.intent).toBe('general');
+    expect(decision.toolExecuted).toBeNull();
+    // Context should say GENERAL INTENT instead of LIVE DATA UNAVAILABLE
+    expect(decision.contextString).toContain('GENERAL INTENT');
+  });
+
+  it('Case 14: Stock with partial fundamentals -> Available metrics score normally, unavailable categories remain null', async () => {
+    const partialProfile = {
+      profile: {
+        symbol: 'PARTIAL',
+        companyName: 'Partial Inc',
+      },
+      quote: {
+        currentPrice: 100,
+      }
+    };
+    const partialFinancials = {
+      symbol: 'PARTIAL',
+      roe: 25, // Has ROE -> Capital Efficiency should have a score
+      // Missing everything else (e.g., debtToEquity) -> Financial Health should be null
+    };
+
+    const report = scoreEngine.calculateScore(partialProfile.profile, partialProfile.quote, partialFinancials);
+    expect(report.categories.capitalEfficiency.score).not.toBeNull();
+    expect(report.categories.financialHealth.score).toBeNull();
+  });
+
+  it('Case 15: Stock with zero usable scoring metrics -> No fabricated score', async () => {
+    const report = scoreEngine.calculateScore({ symbol: 'ZERO' }, {}, {});
+    expect(report.categories.financialHealth.score).toBeNull();
+    expect(report.categories.profitability.score).toBeNull();
+    expect(report.categories.growth.score).toBeNull();
+    expect(report.categories.valuation.score).toBeNull();
+    expect(report.categories.capitalEfficiency.score).toBeNull();
+    expect(report.overallScore).toBeNull();
+    expect(report.fundamentalCards.roe).toBe('Not Available');
+  });
 });

@@ -4,7 +4,7 @@ import { CompanyProfileDTO } from '../../providers/dto/company-profile.dto';
 import { MarketQuoteDTO } from '../../providers/dto/market-quote.dto';
 
 export interface CategoryScore {
-  score: number; // 0.0 - 10.0
+  score: number | null; // 0.0 - 10.0 or null if unavailable
   weight: number;
   availableMetrics: string[];
   missingMetrics: string[];
@@ -193,7 +193,7 @@ export class ScoreEngine {
             (healthScores.reduce((a, b) => a + b, 0) / healthScores.length) *
               10,
           ) / 10
-        : 5.0;
+        : null;
 
     // 2. Profitability & Margins
     const profitScores: number[] = [];
@@ -226,7 +226,7 @@ export class ScoreEngine {
             (profitScores.reduce((a, b) => a + b, 0) / profitScores.length) *
               10,
           ) / 10
-        : 5.0;
+        : null;
 
     // 3. Growth & Momentum
     const growthScores: number[] = [];
@@ -265,7 +265,7 @@ export class ScoreEngine {
             (growthScores.reduce((a, b) => a + b, 0) / growthScores.length) *
               10,
           ) / 10
-        : 5.0;
+        : null;
 
     // 4. Valuation
     const valScores: number[] = [];
@@ -296,7 +296,7 @@ export class ScoreEngine {
         ? Math.round(
             (valScores.reduce((a, b) => a + b, 0) / valScores.length) * 10,
           ) / 10
-        : 5.0;
+        : null;
 
     // 5. Capital Efficiency (ROE & ROCE)
     const capScores: number[] = [];
@@ -328,7 +328,7 @@ export class ScoreEngine {
         ? Math.round(
             (capScores.reduce((a, b) => a + b, 0) / capScores.length) * 10,
           ) / 10
-        : 5.0;
+        : null;
 
     // Overall Score calculation (average of non-empty categories)
     const evaluatedCategoryScores = [
@@ -337,13 +337,15 @@ export class ScoreEngine {
       growthScore,
       valScore,
       capScore,
-    ];
+    ].filter((s) => s !== null) as number[];
     const overallScore =
-      Math.round(
-        (evaluatedCategoryScores.reduce((a, b) => a + b, 0) /
-          evaluatedCategoryScores.length) *
-          10,
-      ) / 10;
+      evaluatedCategoryScores.length > 0
+        ? Math.round(
+            (evaluatedCategoryScores.reduce((a, b) => a + b, 0) /
+              evaluatedCategoryScores.length) *
+              10,
+          ) / 10
+        : null;
 
     const dataCompletenessPercent = Math.round(
       (availableMetricCount / Math.max(1, evaluatedMetricCount)) * 100,
@@ -359,24 +361,24 @@ export class ScoreEngine {
 
     // Build rating calculation breakdown strings
     const ratingCalculationBreakdown = {
-      financialHealth: `${healthScore}/10 (${healthScore >= 7.5 ? 'Low Debt & Solid Balance Sheet' : 'Leverage Monitoring Needed'})`,
-      profitability: `${profitScore}/10 (${profitScore >= 7.5 ? 'Strong Operating Margins' : 'Moderate Margins'})`,
-      growth: `${growthScore}/10 (${growthScore >= 7.5 ? 'Solid Revenue & Earnings Expansion' : 'Stable Growth'})`,
-      valuation: `${valScore}/10 (${valScore >= 7.5 ? 'Fairly Valued' : 'Trading at Premium'})`,
-      capitalEfficiency: `${capScore}/10 (${capScore >= 7.5 ? 'High ROE & ROCE Returns' : 'Moderate Return Ratios'})`,
+      financialHealth: healthScore !== null ? `${healthScore}/10 (${healthScore >= 7.5 ? 'Low Debt & Solid Balance Sheet' : 'Leverage Monitoring Needed'})` : 'Not Available',
+      profitability: profitScore !== null ? `${profitScore}/10 (${profitScore >= 7.5 ? 'Strong Operating Margins' : 'Moderate Margins'})` : 'Not Available',
+      growth: growthScore !== null ? `${growthScore}/10 (${growthScore >= 7.5 ? 'Solid Revenue & Earnings Expansion' : 'Stable Growth'})` : 'Not Available',
+      valuation: valScore !== null ? `${valScore}/10 (${valScore >= 7.5 ? 'Fairly Valued' : 'Trading at Premium'})` : 'Not Available',
+      capitalEfficiency: capScore !== null ? `${capScore}/10 (${capScore >= 7.5 ? 'High ROE & ROCE Returns' : 'Moderate Return Ratios'})` : 'Not Available',
     };
 
     // Build the 8 exact fundamental card strings for the UI
     const fundamentalCards: FundamentalCardsReport = {
       revenueGrowth:
         revenueGrowth !== null
-          ? `${revenueGrowth}% YoY (${growthScore >= 7.5 ? 'Strong' : 'Moderate'})`
+          ? `${revenueGrowth}% YoY${growthScore !== null ? (growthScore >= 7.5 ? ' (Strong)' : ' (Moderate)') : ''}`
           : revenueCr !== null
             ? `₹${revenueCr} Cr Scale`
             : 'Not Available',
       profitGrowth:
         profitGrowth !== null
-          ? `${profitGrowth}% YoY (${profitScore >= 7.5 ? 'Solid' : 'Stable'})`
+          ? `${profitGrowth}% YoY${profitScore !== null ? (profitScore >= 7.5 ? ' (Solid)' : ' (Stable)') : ''}`
           : netProfitCr !== null
             ? `₹${netProfitCr} Cr Net`
             : 'Not Available',
@@ -398,11 +400,11 @@ export class ScoreEngine {
           : 'Not Available',
       valuation:
         peRatio !== null
-          ? `P/E: ${peRatio}x (${valScore >= 7.5 ? 'Fair' : 'Premium'})`
+          ? `P/E: ${peRatio}x${valScore !== null ? (valScore >= 7.5 ? ' (Fair)' : ' (Premium)') : ''}`
           : 'Not Available',
       businessQuality:
         opMargin !== null
-          ? `Op Margin: ${opMargin}% (${profitScore >= 7.5 ? 'High Moat' : 'Stable'})`
+          ? `Op Margin: ${opMargin}%${profitScore !== null ? (profitScore >= 7.5 ? ' (High Moat)' : ' (Stable)') : ''}`
           : 'Not Available',
       managementQuality:
         roce !== null || roe !== null
@@ -466,7 +468,9 @@ export class ScoreEngine {
     }
 
     let recommendation: any = 'BUY';
-    if (overallScore >= 8.0) {
+    if (overallScore === null) {
+      recommendation = 'INSUFFICIENT DATA';
+    } else if (overallScore >= 8.0) {
       recommendation = 'STRONG BUY / ACCUMULATE';
     } else if (overallScore >= 7.0) {
       recommendation = 'BUY ON DIPS / WATCH';
@@ -515,9 +519,11 @@ export class ScoreEngine {
           availableMetrics: healthAvailable,
           missingMetrics: healthMissing,
           assessment:
-            healthScore >= 7.5
-              ? 'Strong balance sheet with controlled leverage'
-              : 'Leverage requires monitoring',
+            healthScore === null
+              ? 'Insufficient data for an accurate assessment'
+              : healthScore >= 7.5
+                ? 'Strong balance sheet with controlled leverage'
+                : 'Leverage requires monitoring',
         },
         profitability: {
           score: profitScore,
@@ -525,9 +531,11 @@ export class ScoreEngine {
           availableMetrics: profitAvailable,
           missingMetrics: profitMissing,
           assessment:
-            profitScore >= 7.5
-              ? 'Healthy operating leverage & positive margins'
-              : 'Margin expansion in progress',
+            profitScore === null
+              ? 'Insufficient data for an accurate assessment'
+              : profitScore >= 7.5
+                ? 'Healthy operating leverage & positive margins'
+                : 'Margin expansion in progress',
         },
         growth: {
           score: growthScore,
@@ -535,7 +543,9 @@ export class ScoreEngine {
           availableMetrics: growthAvailable,
           missingMetrics: growthMissing,
           assessment:
-            'Top-line and earnings growth trend evaluated from live provider filings',
+            growthScore === null
+              ? 'Insufficient data for an accurate assessment'
+              : 'Top-line and earnings growth trend evaluated from live provider filings',
         },
         valuation: {
           score: valScore,
@@ -543,16 +553,20 @@ export class ScoreEngine {
           availableMetrics: valAvailable,
           missingMetrics: valMissing,
           assessment:
-            valScore >= 7.5
-              ? 'Favorable valuation relative to growth'
-              : 'Trading at premium growth multiple',
+            valScore === null
+              ? 'Insufficient data for an accurate assessment'
+              : valScore >= 7.5
+                ? 'Favorable valuation relative to growth'
+                : 'Trading at premium growth multiple',
         },
         capitalEfficiency: {
           score: capScore,
           weight: 0.15,
           availableMetrics: capAvailable,
           missingMetrics: capMissing,
-          assessment: 'ROE & ROCE return ratios from provider metrics',
+          assessment: capScore === null
+              ? 'Insufficient data for an accurate assessment'
+              : 'ROE & ROCE return ratios from provider metrics',
         },
       },
     };

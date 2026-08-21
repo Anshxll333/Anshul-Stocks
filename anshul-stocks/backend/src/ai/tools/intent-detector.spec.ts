@@ -80,4 +80,38 @@ describe('IntentDetector IPO integration', () => {
     const result = detector.detect('What is P/E ratio and ROE of TCS?');
     expect(result.intent).toBe('financial_ratios');
   });
+
+  it('detects "can you suggest the stocks for investing top 10 stocks" as a general intent (screener)', () => {
+    const result = detector.detect('can you suggest the stocks for investing top 10 stocks');
+    expect(result.intent).toBe('general');
+  });
+
+  it('detects "recommend some stocks" as a general intent (screener)', () => {
+    const result = detector.detect('recommend some stocks');
+    expect(result.intent).toBe('general');
+  });
+
+  it('detects "stocks to invest in" as a general intent (screener)', () => {
+    const result = detector.detect('stocks to invest in');
+    expect(result.intent).toBe('general');
+  });
+
+  it('DOES NOT detect "is TCS a good stock?" as a screener intent because it contains a target symbol', () => {
+    const result = detector.detect('is TCS a good stock?');
+    // It should hit stock_lookup and extract TCS
+    expect(result.intent).toBe('stock_lookup');
+    expect(result.targetSymbol).toBe('TCS');
+  });
+
+  it('DOES NOT detect "recommend TCS" as a screener intent because it contains a target symbol', () => {
+    const result = detector.detect('recommend TCS');
+    expect(result.intent).toBe('stock_lookup');
+    expect(result.targetSymbol).toBe('TCS');
+  });
+
+  it('DOES NOT detect "suggest whether I should buy TCS" as a screener intent', () => {
+    const result = detector.detect('suggest whether I should buy TCS');
+    expect(result.intent).toBe('stock_lookup');
+    expect(result.targetSymbol).toBe('TCS');
+  });
 });

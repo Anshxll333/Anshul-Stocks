@@ -149,6 +149,20 @@ export class IntentDetector {
       };
     }
 
+    // 5.5 Generic Screener / Top Stocks Intent (Not a single stock lookup)
+    const screenerKeywords = /\b(top\s+\d+\s+stocks|best\s+stocks|suggest\s+(?:some\s+)?stocks|recommend\s+(?:some\s+)?stocks|list\s+of\s+stocks|stocks\s+to\s+invest)\b/i;
+    const isScreenerQuery = screenerKeywords.test(text) || text.includes('top 10 stocks');
+    
+    if (isScreenerQuery) {
+      const extracted = this.extractSymbol(userPrompt);
+      // If no symbol was extracted, or if the extracted symbol is just a generic phrase 
+      // falsely extracted by Rule 3 (like "INVESTING TOP 10 STOCKS"), treat as general.
+      // We assume a real symbol is usually short (1-2 words).
+      if (!extracted || extracted.split(/\s+/).length > 2) {
+        return { intent: 'general', confidence: 0.95 };
+      }
+    }
+
     // 6. Stock Quote / Profile Intent
     const hasStockKeywords =
       text.includes('stock') ||
