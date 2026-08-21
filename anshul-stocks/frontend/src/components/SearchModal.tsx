@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Sparkles, Clock, ArrowRight, Building2 } from 'lucide-react';
+import { apiClient } from '../api/client';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -25,11 +26,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
 
   useEffect(() => {
     if (isOpen) {
-      fetch('/api/market/ipo')
-        .then(r => r.ok ? r.json() : { success: false })
+      apiClient.get('/market/ipo')
         .then(res => {
-          if (res.success && Array.isArray(res.data)) {
-            setActiveIpos(res.data.slice(0, 4));
+          const data = res.data;
+          if (data && data.success && Array.isArray(data.data)) {
+            setActiveIpos(data.data.slice(0, 4));
           }
         })
         .catch(() => {});
@@ -54,11 +55,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
     }
     const timer = setTimeout(() => {
       setSearching(true);
-      fetch(`/api/market/search?q=${encodeURIComponent(query.trim())}`)
-        .then(r => r.ok ? r.json() : { success: false, data: [] })
+      apiClient.get(`/market/search?q=${encodeURIComponent(query.trim())}`)
         .then(res => {
-          if (res.success && Array.isArray(res.data)) {
-            setSearchResults(res.data);
+          const data = res.data;
+          if (data && data.success && Array.isArray(data.data)) {
+            setSearchResults(data.data);
           } else {
             setSearchResults([]);
           }

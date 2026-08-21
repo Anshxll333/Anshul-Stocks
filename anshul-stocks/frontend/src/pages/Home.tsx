@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Sparkles, Building2, UploadCloud, ArrowRight, Star, Search, Scale, FileText } from 'lucide-react';
+import { apiClient } from '../api/client';
 
 interface HomeIpoItem {
   id: number;
@@ -72,9 +73,8 @@ const Home: React.FC = () => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/market/ipo');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json: { success?: boolean; data?: unknown } = await res.json();
+        const res = await apiClient.get('/market/ipo');
+        const json: { success?: boolean; data?: unknown } = res.data;
         if (cancelled) return;
         const rows = (Array.isArray(json?.data) ? json.data : []) as HomeIpoItem[];
         const live = rows

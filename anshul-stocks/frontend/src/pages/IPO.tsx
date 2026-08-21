@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { createNewConversation } from '../api/chat';
+import { apiClient } from '../api/client';
 
 interface IpoHubItem {
   id: number;
@@ -99,9 +100,8 @@ export const IPO: React.FC = () => {
     else setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/market/ipo');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+      const res = await apiClient.get('/market/ipo');
+      const json = res.data;
       const rows: any[] = json?.success && Array.isArray(json.data) ? json.data : [];
       setLive(rows.filter((r) => r.currentStatus === 'live'));
       setUpcoming(rows.filter((r) => r.currentStatus === 'upcoming'));
@@ -141,10 +141,8 @@ export const IPO: React.FC = () => {
     setRefreshing(true);
     setError(null);
     try {
-      const syncRes = await fetch('/api/debug/ipo-sync', { method: 'POST' });
-      const syncJson = syncRes.ok
-        ? await syncRes.json().catch(() => null)
-        : null;
+      const syncRes = await apiClient.post('/debug/ipo-sync').catch(() => null);
+      const syncJson = syncRes ? syncRes.data : null;
       const syncStatus: string | null = syncJson?.result?.status ?? null;
       await fetchIpos(true);
       if (syncStatus && syncStatus !== 'success') {
