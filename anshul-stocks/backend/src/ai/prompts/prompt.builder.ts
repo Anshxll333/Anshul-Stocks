@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SYSTEM_PROMPT } from './system.prompt';
 import { STOCK_ANALYSIS_PROMPT_TEMPLATE } from './stock.prompt';
-import { IPO_ANALYSIS_PROMPT_TEMPLATE } from './ipo.prompt';
+import { IPO_ANALYSIS_PROMPT_TEMPLATE, IPO_LIST_ANALYSIS_PROMPT_TEMPLATE } from './ipo.prompt';
 import { VISION_ANALYSIS_PROMPT_TEMPLATE } from './vision.prompt';
 
 @Injectable()
@@ -22,6 +22,10 @@ When a [GROUND TRUTH ... JSON] block is provided in the prompt context:
 
   buildIpoPrompt(companyName: string, context?: string): string {
     return IPO_ANALYSIS_PROMPT_TEMPLATE(companyName, context);
+  }
+
+  buildIpoListPrompt(context?: string): string {
+    return IPO_LIST_ANALYSIS_PROMPT_TEMPLATE(context);
   }
 
   buildVisionPrompt(imageType: string): string {

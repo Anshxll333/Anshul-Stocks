@@ -102,10 +102,20 @@ export class ContextService {
         const symbolMatch = toolContext.match(/FOR (.*?)\]:/);
         const symbol = symbolMatch ? symbolMatch[1] : 'Stock';
         userContent = `User Query: ${currentPrompt}\n\n${this.promptBuilder.buildStockPrompt(symbol, toolContext)}`;
-      } else if (toolContext.startsWith('[GROUND TRUTH IPO PROSPECTUS JSON FROM POSTGRESQL FOR ')) {
+      } else if (
+        toolContext.startsWith(
+          '[GROUND TRUTH IPO PROSPECTUS JSON FROM POSTGRESQL FOR ',
+        )
+      ) {
         const companyMatch = toolContext.match(/FOR (.*?)\]:/);
         const companyName = companyMatch ? companyMatch[1] : 'IPO';
         userContent = `User Query: ${currentPrompt}\n\n${this.promptBuilder.buildIpoPrompt(companyName, toolContext)}`;
+      } else if (
+        toolContext.startsWith(
+          '[GROUND TRUTH LIVE IPO LIST JSON FROM POSTGRESQL]:',
+        )
+      ) {
+        userContent = `User Query: ${currentPrompt}\n\n${this.promptBuilder.buildIpoListPrompt(toolContext)}`;
       }
     }
 

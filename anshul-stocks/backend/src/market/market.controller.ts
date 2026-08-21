@@ -84,8 +84,6 @@ export class MarketController {
     }
   }
 
-
-
   @Get('ipo')
   async getIpos() {
     // Serve from PostgreSQL (populated by the hourly IpoSchedulerService cron).
@@ -104,9 +102,7 @@ export class MarketController {
       // been failing, lastSyncedAt stays old so the frontend can flag stale data.
       let lastSyncedAtMs = 0;
       for (const row of rows) {
-        const t = row.lastSyncedAt
-          ? new Date(row.lastSyncedAt).getTime()
-          : 0;
+        const t = row.lastSyncedAt ? new Date(row.lastSyncedAt).getTime() : 0;
         if (!isNaN(t) && t > lastSyncedAtMs) lastSyncedAtMs = t;
       }
       return {
@@ -140,8 +136,6 @@ export class MarketController {
     }
   }
 
-
-
   @Get('search')
   async search(@Query('q') query: string) {
     if (!query || !query.trim()) {
@@ -172,7 +166,8 @@ export class MarketController {
       let detectedName = 'Unknown IPO';
       let detectedTicker = 'IPO';
       const exchange = 'NSE / BSE';
-      const unavailableMsg = 'This information is currently unavailable from the connected live providers.';
+      const unavailableMsg =
+        'This information is currently unavailable from the connected live providers.';
       let issuePrice = unavailableMsg;
       let lotSize = unavailableMsg;
       let subscription = unavailableMsg;
@@ -180,8 +175,8 @@ export class MarketController {
       let gmp = unavailableMsg;
       let mentorAnalysis =
         'We processed your uploaded broker screenshot using Vision AI. To provide a definitive subscription recommendation, please ensure the company name and issue price are clearly legible.';
-      let conclusion = 'Worth Watching';
-      let conclusionReason =
+      const conclusion = 'Worth Watching';
+      const conclusionReason =
         'The screenshot document was verified, but live exchange order book multiples are still building.';
 
       try {
@@ -190,24 +185,34 @@ PHASE 1 (IMAGE TO TEXT): Transcribe EVERY visible figure EXACTLY as shown: compa
 PHASE 2 (ACCURATE OUTPUT): Return ONLY a raw JSON object (no markdown, no code fences):
 {"name": "Company Name as shown", "ticker": "TICKER", "issuePrice": "price range", "lotSize": "number of shares", "subscription": "status", "listingDate": "date", "gmp": "GMP if visible"}.
 CRITICAL RULES: Extract only text actually visible in the image. If any value is NOT visible, set it to "N/A". NEVER invent, estimate, or use hardcoded data.`;
-        
+
         const aiProvider = this.providerManager.getAiProvider();
-        const ocrResponse = await aiProvider.analyzeImage(file.buffer, file.mimetype, prompt);
-        
+        const ocrResponse = await aiProvider.analyzeImage(
+          file.buffer,
+          file.mimetype,
+          prompt,
+        );
+
         try {
-            const cleanJsonString = ocrResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-            const ocrResult = JSON.parse(cleanJsonString);
-            if (ocrResult.name) detectedName = ocrResult.name;
-            if (ocrResult.ticker) detectedTicker = ocrResult.ticker;
-            if (ocrResult.issuePrice) issuePrice = ocrResult.issuePrice;
-            if (ocrResult.lotSize) lotSize = ocrResult.lotSize;
-            if (ocrResult.subscription) subscription = ocrResult.subscription;
-            if (ocrResult.listingDate) listingDate = ocrResult.listingDate;
-            if (ocrResult.gmp) gmp = ocrResult.gmp;
-            
-            mentorAnalysis = "The AI mentor analyzed this screenshot in real time. Please chat to dive deeper.";
+          const cleanJsonString = ocrResponse
+            .replace(/```json/g, '')
+            .replace(/```/g, '')
+            .trim();
+          const ocrResult = JSON.parse(cleanJsonString);
+          if (ocrResult.name) detectedName = ocrResult.name;
+          if (ocrResult.ticker) detectedTicker = ocrResult.ticker;
+          if (ocrResult.issuePrice) issuePrice = ocrResult.issuePrice;
+          if (ocrResult.lotSize) lotSize = ocrResult.lotSize;
+          if (ocrResult.subscription) subscription = ocrResult.subscription;
+          if (ocrResult.listingDate) listingDate = ocrResult.listingDate;
+          if (ocrResult.gmp) gmp = ocrResult.gmp;
+
+          mentorAnalysis =
+            'The AI mentor analyzed this screenshot in real time. Please chat to dive deeper.';
         } catch (e: any) {
-            this.logger.warn("Failed to parse OCR response as JSON: " + ocrResponse);
+          this.logger.warn(
+            'Failed to parse OCR response as JSON: ' + ocrResponse,
+          );
         }
       } catch (ocrErr: any) {
         this.logger.warn(`OCR failed, using default text: ${ocrErr.message}`);

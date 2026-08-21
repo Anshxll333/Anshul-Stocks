@@ -98,10 +98,12 @@ describe('ContextService', () => {
 
     const payload = await service.buildContextWindow(1, 'hello');
 
-    const history = payload[1] as ChatMessagePayload;
+    const history = payload[1];
     expect(history.content).toContain('...[context truncated]');
     // content = first 1500 chars + truncation suffix
-    expect(history.content.length).toBe(1500 + '\n...[context truncated]'.length);
+    expect(history.content.length).toBe(
+      1500 + '\n...[context truncated]'.length,
+    );
     // The critical head of the JSON card is preserved
     expect(history.content.startsWith('{"type":"stock"')).toBe(true);
   });
@@ -112,9 +114,11 @@ describe('ContextService', () => {
 
     const payload = await service.buildContextWindow(1, 'hello');
 
-    const history = payload[1] as ChatMessagePayload;
+    const history = payload[1];
     expect(history.content).toContain('...[context truncated]');
-    expect(history.content.length).toBe(600 + '\n...[context truncated]'.length);
+    expect(history.content.length).toBe(
+      600 + '\n...[context truncated]'.length,
+    );
   });
 
   it('should keep the newest messages and drop the oldest when the history byte cap is exceeded', async () => {
@@ -146,9 +150,7 @@ describe('ContextService', () => {
       '[GROUND TRUTH ...]',
     );
 
-    const last = payload[payload.length - 1] as ChatMessagePayload;
-    expect(last.content).toBe(
-      'tell me about RELIANCE\n\n[GROUND TRUTH ...]',
-    );
+    const last = payload[payload.length - 1];
+    expect(last.content).toBe('tell me about RELIANCE\n\n[GROUND TRUTH ...]');
   });
 });

@@ -51,9 +51,15 @@ export class IpoTool implements ITool<IpoToolInput, any> {
     try {
       const current = await this.ipoSyncService.getCurrentIpos();
       const names = [...current.live, ...current.upcoming]
-        .map((r) => String((r as any).companyName || '').trim().toLowerCase())
+        .map((r) =>
+          String(r.companyName || '')
+            .trim()
+            .toLowerCase(),
+        )
         .filter(Boolean);
-      const lower = String(prompt || '').trim().toLowerCase();
+      const lower = String(prompt || '')
+        .trim()
+        .toLowerCase();
       return names.find((name) => lower.includes(name)) || null;
     } catch {
       return null;

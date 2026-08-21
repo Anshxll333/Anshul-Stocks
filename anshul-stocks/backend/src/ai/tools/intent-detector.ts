@@ -87,7 +87,7 @@ export class IntentDetector {
           text,
         ) ||
         /\b(ipo|ipos)\s+(list|calendar|updates|status|overview)\b/.test(text) ||
-        /\b(list|show|get|give|fetch|display)\s+.*\bipos?\b/.test(text);
+        /\b(list|show|get|give|fetch|display)\s+(?:me\s+)?(?:the\s+)?(?:all\s+)?\bipos?\b/.test(text);
 
       const extractedCompany = this.extractIpoCompany(userPrompt);
 
@@ -170,7 +170,9 @@ export class IntentDetector {
         .trim();
       return {
         intent: 'stock_lookup',
-        targetSymbol: symbolCandidate || (fallbackSym && fallbackSym.length >= 2 ? fallbackSym : undefined),
+        targetSymbol:
+          symbolCandidate ||
+          (fallbackSym && fallbackSym.length >= 2 ? fallbackSym : undefined),
         confidence: 0.89,
       };
     }

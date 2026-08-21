@@ -329,34 +329,91 @@ const FormattedContent: React.FC<{
 
         // Handle normal text paragraphs, bold, bullet points
         const lines = part.split('\n');
+        const elements: React.ReactNode[] = [];
+        let tableRows: string[] = [];
+        
+        const flushTable = () => {
+          if (tableRows.length > 0) {
+            elements.push(renderTable(tableRows, elements.length));
+            tableRows = [];
+          }
+        };
+
+        for (let lIdx = 0; lIdx < lines.length; lIdx++) {
+          const line = lines[lIdx];
+          const trimmed = line.trim();
+          
+          // Detect markdown table rows
+          if (trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 2) {
+            tableRows.push(trimmed);
+            continue;
+          } else {
+            flushTable();
+          }
+
+          if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            elements.push(
+              <div key={lIdx} className="flex items-start gap-2 pl-2">
+                <span className="text-sky-400 font-bold">•</span>
+                <span className="text-white">{parseInlineMarkdown(line.slice(2), isUser)}</span>
+              </div>
+            );
+            continue;
+          }
+          if (!trimmed) {
+            elements.push(<div key={lIdx} className="h-1" />);
+            continue;
+          }
+          elements.push(
+            <p key={lIdx} className="text-white">
+              {parseInlineMarkdown(line, isUser)}
+              {isStreaming && idx === parts.length - 1 && lIdx === lines.length - 1 && (
+                <span className="inline-block w-2 h-4 ml-1 bg-sky-400 animate-pulse font-mono align-middle">▌</span>
+              )}
+            </p>
+          );
+        }
+        flushTable();
         return (
           <div key={idx} className="space-y-1">
-            {lines.map((line, lIdx) => {
-              const trimmed = line.trim();
-              if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                return (
-                  <div key={lIdx} className="flex items-start gap-2 pl-2">
-                    <span className="text-sky-400 font-bold">•</span>
-                    <span className="text-white">{parseInlineMarkdown(line.slice(2), isUser)}</span>
-                  </div>
-                );
-              }
-              if (!trimmed) return <div key={lIdx} className="h-1" />;
-              return (
-                <p key={lIdx} className="text-white">
-                  {parseInlineMarkdown(line, isUser)}
-                  {isStreaming && idx === parts.length - 1 && lIdx === lines.length - 1 && (
-                    <span className="inline-block w-2 h-4 ml-1 bg-sky-400 animate-pulse font-mono align-middle">▌</span>
-                  )}
-                </p>
-              );
-            })}
+            {elements}
           </div>
         );
       })}
     </div>
   );
 };
+
+// Helper to render Markdown tables
+function renderTable(rows: string[], key: number) {
+  const parsedRows = rows.map(r => r.split('|').slice(1, -1).map(c => c.trim()));
+  const headers = parsedRows[0] || [];
+  // Filter out the separator row (usually index 1, containing dashes)
+  const bodyRows = parsedRows.slice(1).filter(row => !row.every(cell => /^[:-]+$/.test(cell)));
+
+  return (
+    <div key={`table-${key}`} className="my-3 overflow-x-auto rounded-lg border border-[#1F2937]">
+      <table className="w-full text-left text-sm text-gray-300">
+        <thead className="bg-[#111827] text-xs uppercase text-gray-400 border-b border-[#1F2937]">
+          <tr>
+            {headers.map((h, i) => (
+              <th key={i} className="px-4 py-3 font-medium whitespace-nowrap">{parseInlineMarkdown(h)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#1F2937] bg-[#0B1220]">
+          {bodyRows.map((row, rIdx) => (
+            <tr key={rIdx} className="hover:bg-[#111827]/50 transition-colors">
+              {row.map((cell, cIdx) => (
+                <td key={cIdx} className="px-4 py-3 whitespace-nowrap">{parseInlineMarkdown(cell)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 // Helper to parse inline markdown (**bold**, *italic*, `code`)
 function parseInlineMarkdown(text: string, _isUser?: boolean): React.ReactNode[] {

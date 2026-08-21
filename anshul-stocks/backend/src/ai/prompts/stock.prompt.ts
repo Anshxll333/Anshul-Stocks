@@ -14,4 +14,3 @@ You MUST include all 6 Mentor evaluation steps:
 5. "mentorInvestmentAdvice": Mentor asks the user how much total capital they plan to invest ("askUserCapital"), and gives a staged allocation strategy example ("stagedStrategyExample", e.g., if total capital is ₹10,000, invest ₹5,000 now and add ₹5,000 on dip to buy price).
 6. "bottomLine" & "keyRisks" (top 3 risks) AND "detailedInfoPrompt": End by explicitly asking "If you want detailed information about the company, just write YES."
 `;
-

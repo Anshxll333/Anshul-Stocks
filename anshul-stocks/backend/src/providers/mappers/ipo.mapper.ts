@@ -59,7 +59,8 @@ export class IPOMapper {
     status: string | undefined | null,
   ): 'open' | 'upcoming' | 'closed' | 'listed' {
     const v = String(status || '').toLowerCase();
-    if (v.includes('live') || v === 'open' || v.includes('active')) return 'open';
+    if (v.includes('live') || v === 'open' || v.includes('active'))
+      return 'open';
     if (v.includes('closed') || v.includes('closing')) return 'closed';
     if (v.includes('listed') || v.includes('recent')) return 'listed';
     // upcoming / filed / drhp / unknown -> treat as upcoming
@@ -70,26 +71,24 @@ export class IPOMapper {
     const parseNum = IPOMapper.parseNum;
     const hasRawData = Object.keys(raw || {}).length > 0;
     const name =
-      raw.companyName ||
-      raw.name ||
-      (hasRawData ? 'Target IPO Company' : null);
+      raw.companyName || raw.name || (hasRawData ? 'Target IPO Company' : null);
     const lower = (name || '').toLowerCase();
 
-    let priceBand = raw.priceBand || null;
-    let lotSize = parseNum(raw.lotSize);
-    let minInvestment = parseNum(raw.minInvestment);
-    let issueSizeCr = parseNum(raw.issueSizeCr ?? raw.issueSize);
-    let gmp = parseNum(raw.gmp);
-    let listingGainPercent = parseNum(raw.listingGainPercent);
-    let totalSub = parseNum(raw.totalSub);
-    let qibSub = parseNum(raw.qibSub);
-    let niiSub = parseNum(raw.niiSub);
-    let retailSub = parseNum(raw.retailSub);
-    let symbol = raw.symbol ? String(raw.symbol).toUpperCase() : undefined;
+    const priceBand = raw.priceBand || null;
+    const lotSize = parseNum(raw.lotSize);
+    const minInvestment = parseNum(raw.minInvestment);
+    const issueSizeCr = parseNum(raw.issueSizeCr ?? raw.issueSize);
+    const gmp = parseNum(raw.gmp);
+    const listingGainPercent = parseNum(raw.listingGainPercent);
+    const totalSub = parseNum(raw.totalSub);
+    const qibSub = parseNum(raw.qibSub);
+    const niiSub = parseNum(raw.niiSub);
+    const retailSub = parseNum(raw.retailSub);
+    const symbol = raw.symbol ? String(raw.symbol).toUpperCase() : undefined;
     const openDate = raw.openDate || null;
     const closeDate = raw.closeDate || null;
-    let listingDate = raw.listingDate || null;
-    let registrar = raw.registrar || null;
+    const listingDate = raw.listingDate || null;
+    const registrar = raw.registrar || null;
 
     // GMP: preserve the latest entry + full trend history.
     // When the API returns greyMarketPremium.gmpTrends = null, gmp stays NULL.
@@ -115,7 +114,7 @@ export class IPOMapper {
       issuePrice: parseNum(raw.issuePrice) as any,
       priceBand: priceBand,
       priceRange: priceRange || undefined,
-      issueUpperPrice: issueUpperPrice as any,
+      issueUpperPrice: issueUpperPrice,
       lotSize: lotSize as any,
       minInvestment: minInvestment as any,
       issueSizeCr: issueSizeCr as any,

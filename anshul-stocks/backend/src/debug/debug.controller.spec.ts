@@ -25,9 +25,10 @@ describe('DebugController Integration Tests', () => {
               .mockResolvedValue({ stock: { status: 'healthy' } }),
             getCircuitState: jest.fn().mockReturnValue('CLOSED'),
             getAiProvider: jest.fn().mockReturnValue({
-              checkHealth: jest
-                .fn()
-                .mockResolvedValue({ status: 'healthy', model: 'oc/big-pickle' }),
+              checkHealth: jest.fn().mockResolvedValue({
+                status: 'healthy',
+                model: 'oc/big-pickle',
+              }),
             }),
           },
         },

@@ -171,9 +171,7 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     // IPO requests get their own timeout (default 30s) so a slow FinAPI cold
     // start does not abort the whole hourly sync at the generic 10s timeout.
     this.timeoutMs = parseInt(
-      process.env.IPO_TIMEOUT_MS ||
-        process.env.PROVIDER_TIMEOUT_MS ||
-        '10000',
+      process.env.IPO_TIMEOUT_MS || process.env.PROVIDER_TIMEOUT_MS || '10000',
       10,
     );
     // PROVIDER_RETRY_COUNT is the total number of attempts.
@@ -282,9 +280,7 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     const schedule =
       raw.schedule && typeof raw.schedule === 'object' ? raw.schedule : {};
     const issueSize =
-      raw.issueSize && typeof raw.issueSize === 'object'
-        ? raw.issueSize
-        : {};
+      raw.issueSize && typeof raw.issueSize === 'object' ? raw.issueSize : {};
     const gmpObj =
       raw.greyMarketPremium &&
       typeof raw.greyMarketPremium === 'object' &&
@@ -297,8 +293,7 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     const latestGmp = gmpTrends && gmpTrends.length > 0 ? gmpTrends[0] : null;
 
     const subs =
-      raw.subscriptionNumbers &&
-      typeof raw.subscriptionNumbers === 'object'
+      raw.subscriptionNumbers && typeof raw.subscriptionNumbers === 'object'
         ? raw.subscriptionNumbers
         : {};
     const inst =
@@ -308,7 +303,8 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     const nii = subs.nii && typeof subs.nii === 'object' ? subs.nii : {};
     const retail =
       subs.retail && typeof subs.retail === 'object' ? subs.retail : {};
-    const total = subs.total && typeof subs.total === 'object' ? subs.total : {};
+    const total =
+      subs.total && typeof subs.total === 'object' ? subs.total : {};
 
     const priceRange = this.pick(
       raw,
@@ -321,17 +317,14 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     return {
       companyName: name,
       symbol: this.pick(raw, 'symbol', 'ticker', 'tickerSymbol'),
-      exchange:
-        this.pick(raw, 'exchange', 'listingExchange') || 'NSE / BSE',
+      exchange: this.pick(raw, 'exchange', 'listingExchange') || 'NSE / BSE',
       ipoType: this.pick(raw, 'type', 'ipoType', 'category'),
       detailsUrl: this.pick(raw, 'detailsUrl', 'url'),
       logoUrl: this.pick(raw, 'logoUrl', 'logo'),
       exchanges: this.pick(raw, 'exchanges'),
       priceBand: priceRange,
       priceRange: priceRange,
-      lotSize: this.num(
-        this.pick(raw, 'lotSize', 'lot_size', 'lot'),
-      ),
+      lotSize: this.num(this.pick(raw, 'lotSize', 'lot_size', 'lot')),
       minInvestment: this.pick(
         raw,
         'minInvestment',
@@ -378,11 +371,7 @@ export class ExternalIpoApiProvider implements IIpoProvider {
         schedule,
         'lockInEndDateAnchorRemaining',
       ),
-      subscriptionData: this.pick(
-        raw,
-        'subscriptionData',
-        'subscription_data',
-      ),
+      subscriptionData: this.pick(raw, 'subscriptionData', 'subscription_data'),
       // GMP: latest trend entry wins; missing GMP stays null (never 0).
       gmp:
         this.num(latestGmp?.gmp) ??
@@ -418,11 +407,9 @@ export class ExternalIpoApiProvider implements IIpoProvider {
         'bookRunningLeadManagers',
       ),
       retailSub:
-        this.num(this.pick(retail, 'subscription')) ??
-        this.num(raw.retailSub),
+        this.num(this.pick(retail, 'subscription')) ?? this.num(raw.retailSub),
       qibSub: this.num(raw.qibSub),
-      niiSub:
-        this.num(this.pick(nii, 'subscription')) ?? this.num(raw.niiSub),
+      niiSub: this.num(this.pick(nii, 'subscription')) ?? this.num(raw.niiSub),
       totalSub:
         this.num(this.pick(total, 'subscription')) ?? this.num(raw.totalSub),
       instReserved: this.num(this.pick(inst, 'reserved')),
@@ -435,8 +422,9 @@ export class ExternalIpoApiProvider implements IIpoProvider {
       totalReserved: this.num(this.pick(total, 'reserved')),
       totalApplied: this.num(this.pick(total, 'applied')),
       category:
-        String(this.pick(raw, 'category', 'ipoType', 'type') || '')
-          .toUpperCase() === 'SME'
+        String(
+          this.pick(raw, 'category', 'ipoType', 'type') || '',
+        ).toUpperCase() === 'SME'
           ? 'SME'
           : 'Mainboard',
       status: this.pick(raw, 'status', 'statusType', 'ipoStatus'),
@@ -472,7 +460,10 @@ export class ExternalIpoApiProvider implements IIpoProvider {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
       const listRes = await fetch('https://api.upstox.com/v2/ipos', {
-        headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: 'application/json',
+        },
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -492,14 +483,22 @@ export class ExternalIpoApiProvider implements IIpoProvider {
         const dCtrl = new AbortController();
         const dTimeout = setTimeout(() => dCtrl.abort(), this.timeoutMs);
         try {
-          const detailRes = await fetch(`https://api.upstox.com/v2/ipos/${ipo.id}`, {
-            headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
-            signal: dCtrl.signal,
-          });
+          const detailRes = await fetch(
+            `https://api.upstox.com/v2/ipos/${ipo.id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+                Accept: 'application/json',
+              },
+              signal: dCtrl.signal,
+            },
+          );
           clearTimeout(dTimeout);
 
           if (!detailRes.ok) {
-            this.logger.warn(`[Upstox] Detail failed for ${ipo.id}: HTTP ${detailRes.status}`);
+            this.logger.warn(
+              `[Upstox] Detail failed for ${ipo.id}: HTTP ${detailRes.status}`,
+            );
             continue;
           }
           const detailData = await detailRes.json();
@@ -508,8 +507,14 @@ export class ExternalIpoApiProvider implements IIpoProvider {
             if (subRaw !== null && subRaw !== undefined) {
               const val = Number(subRaw);
               if (!isNaN(val)) {
-                const symbol = String(detailData.data.symbol || ipo.symbol || '').trim().toLowerCase();
-                const name = String(detailData.data.name || ipo.name || '').trim().toLowerCase();
+                const symbol = String(
+                  detailData.data.symbol || ipo.symbol || '',
+                )
+                  .trim()
+                  .toLowerCase();
+                const name = String(detailData.data.name || ipo.name || '')
+                  .trim()
+                  .toLowerCase();
                 if (symbol) subMap.set(`SYM:${symbol}`, val);
                 if (name) subMap.set(`NAME:${name}`, val);
               }
@@ -517,7 +522,9 @@ export class ExternalIpoApiProvider implements IIpoProvider {
           }
         } catch (err: any) {
           clearTimeout(dTimeout);
-          this.logger.warn(`[Upstox] Detail fetch failed for ${ipo.id}: ${err.message}`);
+          this.logger.warn(
+            `[Upstox] Detail fetch failed for ${ipo.id}: ${err.message}`,
+          );
         }
       }
     } catch (err: any) {
@@ -526,14 +533,20 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     return subMap;
   }
 
-  private async enrichWithUpstox(records: MarketIpoRecord[]): Promise<MarketIpoRecord[]> {
+  private async enrichWithUpstox(
+    records: MarketIpoRecord[],
+  ): Promise<MarketIpoRecord[]> {
     if (!records || records.length === 0) return records;
     const subMap = await this.fetchUpstoxSubscriptions();
     if (subMap.size === 0) return records;
 
     for (const record of records) {
-      const symKey = record.symbol ? `SYM:${record.symbol.trim().toLowerCase()}` : '';
-      const nameKey = record.companyName ? `NAME:${record.companyName.trim().toLowerCase()}` : '';
+      const symKey = record.symbol
+        ? `SYM:${record.symbol.trim().toLowerCase()}`
+        : '';
+      const nameKey = record.companyName
+        ? `NAME:${record.companyName.trim().toLowerCase()}`
+        : '';
 
       const liveSub = subMap.get(symKey) ?? subMap.get(nameKey);
       if (liveSub !== undefined) {
@@ -563,9 +576,7 @@ export class ExternalIpoApiProvider implements IIpoProvider {
         .find(
           (r) =>
             r !== null &&
-            (r.companyName
-              .toLowerCase()
-              .includes(symbolOrName.toLowerCase()) ||
+            (r.companyName.toLowerCase().includes(symbolOrName.toLowerCase()) ||
               (r.symbol &&
                 r.symbol.toLowerCase() === symbolOrName.toLowerCase())),
         );
@@ -578,9 +589,7 @@ export class ExternalIpoApiProvider implements IIpoProvider {
     return (
       list.find(
         (item) =>
-          item.companyName
-            .toLowerCase()
-            .includes(symbolOrName.toLowerCase()) ||
+          item.companyName.toLowerCase().includes(symbolOrName.toLowerCase()) ||
           (item.symbol &&
             item.symbol.toLowerCase() === symbolOrName.toLowerCase()),
       ) || null
@@ -610,9 +619,7 @@ export const IpoProviderFactory: Provider = {
     // 'twelvedata' is distinguishable from an unset variable — previously the
     // factory returned FinAPI whenever IPO_API_BASE_URL was configured,
     // silently ignoring IPO_PROVIDER entirely.
-    const configured = (process.env.IPO_PROVIDER || '')
-      .trim()
-      .toLowerCase();
+    const configured = (process.env.IPO_PROVIDER || '').trim().toLowerCase();
 
     if (configured === 'finapi' || configured === 'external') {
       if (externalIpoApi.isConfigured()) {

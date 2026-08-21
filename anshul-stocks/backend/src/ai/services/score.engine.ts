@@ -94,7 +94,11 @@ export class ScoreEngine {
       'COMPANY'
     ).toUpperCase();
     const companyName = profile.companyName || (profile as any).name || symbol;
-    const currentPrice = quote.currentPrice ?? quote.close ?? (profile as any).currentPrice ?? null;
+    const currentPrice =
+      quote.currentPrice ??
+      quote.close ??
+      (profile as any).currentPrice ??
+      null;
 
     let evaluatedMetricCount = 0;
     let availableMetricCount = 0;
@@ -109,20 +113,41 @@ export class ScoreEngine {
     };
 
     // Extract all fundamental metrics from merged sources
-    const debtToEquity = financials.debtToEquity ?? (profile as any).debtToEquity ?? null;
-    const currentRatio = financials.currentRatio ?? (profile as any).currentRatio ?? null;
-    const opMargin = financials.operatingMargin ?? (profile as any).operatingMargin ?? null;
-    const netMargin = financials.netMargin ?? (profile as any).netMargin ?? null;
-    const revenueGrowth = financials.revenueGrowthPercent ?? (profile as any).revenueGrowthPercent ?? (profile as any).revenueGrowth ?? null;
-    const profitGrowth = financials.profitGrowthPercent ?? (profile as any).profitGrowthPercent ?? (profile as any).earningsGrowth ?? null;
-    const revenueCr = financials.revenueCr ?? (profile as any).revenueCr ?? null;
-    const netProfitCr = financials.netProfitCr ?? (profile as any).netProfitCr ?? null;
+    const debtToEquity =
+      financials.debtToEquity ?? (profile as any).debtToEquity ?? null;
+    const currentRatio =
+      financials.currentRatio ?? (profile as any).currentRatio ?? null;
+    const opMargin =
+      financials.operatingMargin ?? (profile as any).operatingMargin ?? null;
+    const netMargin =
+      financials.netMargin ?? (profile as any).netMargin ?? null;
+    const revenueGrowth =
+      financials.revenueGrowthPercent ??
+      (profile as any).revenueGrowthPercent ??
+      (profile as any).revenueGrowth ??
+      null;
+    const profitGrowth =
+      financials.profitGrowthPercent ??
+      (profile as any).profitGrowthPercent ??
+      (profile as any).earningsGrowth ??
+      null;
+    const revenueCr =
+      financials.revenueCr ?? (profile as any).revenueCr ?? null;
+    const netProfitCr =
+      financials.netProfitCr ?? (profile as any).netProfitCr ?? null;
     const peRatio = financials.peRatio ?? (profile as any).peRatio ?? null;
     const pbRatio = financials.pbRatio ?? (profile as any).pbRatio ?? null;
     const roe = financials.roe ?? (profile as any).roe ?? null;
-    const roce = financials.roce ?? (profile as any).roce ?? (profile as any).roa ?? null;
-    const marketCapCr = financials.enterpriseValueCr ?? (profile as any).marketCapCr ?? ((profile as any).marketCap ? Math.round((profile as any).marketCap / 10000000) : null);
-    const dividendYield = financials.dividendYield ?? (profile as any).dividendYield ?? null;
+    const roce =
+      financials.roce ?? (profile as any).roce ?? (profile as any).roa ?? null;
+    const marketCapCr =
+      financials.enterpriseValueCr ??
+      (profile as any).marketCapCr ??
+      ((profile as any).marketCap
+        ? Math.round((profile as any).marketCap / 10000000)
+        : null);
+    const dividendYield =
+      financials.dividendYield ?? (profile as any).dividendYield ?? null;
     const eps = financials.eps ?? (profile as any).eps ?? null;
 
     // Track completeness
@@ -139,7 +164,7 @@ export class ScoreEngine {
     trackMetric(marketCapCr);
 
     // 1. Financial Health (Debt & Liquidity)
-    let healthScores: number[] = [];
+    const healthScores: number[] = [];
     const healthAvailable: string[] = [];
     const healthMissing: string[] = [];
 
@@ -162,10 +187,16 @@ export class ScoreEngine {
       healthMissing.push('Current Ratio');
     }
 
-    const healthScore = healthScores.length > 0 ? Math.round((healthScores.reduce((a, b) => a + b, 0) / healthScores.length) * 10) / 10 : 5.0;
+    const healthScore =
+      healthScores.length > 0
+        ? Math.round(
+            (healthScores.reduce((a, b) => a + b, 0) / healthScores.length) *
+              10,
+          ) / 10
+        : 5.0;
 
     // 2. Profitability & Margins
-    let profitScores: number[] = [];
+    const profitScores: number[] = [];
     const profitAvailable: string[] = [];
     const profitMissing: string[] = [];
 
@@ -189,10 +220,16 @@ export class ScoreEngine {
       profitMissing.push('Net Margin');
     }
 
-    const profitScore = profitScores.length > 0 ? Math.round((profitScores.reduce((a, b) => a + b, 0) / profitScores.length) * 10) / 10 : 5.0;
+    const profitScore =
+      profitScores.length > 0
+        ? Math.round(
+            (profitScores.reduce((a, b) => a + b, 0) / profitScores.length) *
+              10,
+          ) / 10
+        : 5.0;
 
     // 3. Growth & Momentum
-    let growthScores: number[] = [];
+    const growthScores: number[] = [];
     const growthAvailable: string[] = [];
     const growthMissing: string[] = [];
 
@@ -222,10 +259,16 @@ export class ScoreEngine {
       growthMissing.push('Profit Growth');
     }
 
-    const growthScore = growthScores.length > 0 ? Math.round((growthScores.reduce((a, b) => a + b, 0) / growthScores.length) * 10) / 10 : 5.0;
+    const growthScore =
+      growthScores.length > 0
+        ? Math.round(
+            (growthScores.reduce((a, b) => a + b, 0) / growthScores.length) *
+              10,
+          ) / 10
+        : 5.0;
 
     // 4. Valuation
-    let valScores: number[] = [];
+    const valScores: number[] = [];
     const valAvailable: string[] = [];
     const valMissing: string[] = [];
 
@@ -248,10 +291,15 @@ export class ScoreEngine {
       valMissing.push('P/B Ratio');
     }
 
-    const valScore = valScores.length > 0 ? Math.round((valScores.reduce((a, b) => a + b, 0) / valScores.length) * 10) / 10 : 5.0;
+    const valScore =
+      valScores.length > 0
+        ? Math.round(
+            (valScores.reduce((a, b) => a + b, 0) / valScores.length) * 10,
+          ) / 10
+        : 5.0;
 
     // 5. Capital Efficiency (ROE & ROCE)
-    let capScores: number[] = [];
+    const capScores: number[] = [];
     const capAvailable: string[] = [];
     const capMissing: string[] = [];
 
@@ -275,11 +323,27 @@ export class ScoreEngine {
       capMissing.push('ROCE');
     }
 
-    const capScore = capScores.length > 0 ? Math.round((capScores.reduce((a, b) => a + b, 0) / capScores.length) * 10) / 10 : 5.0;
+    const capScore =
+      capScores.length > 0
+        ? Math.round(
+            (capScores.reduce((a, b) => a + b, 0) / capScores.length) * 10,
+          ) / 10
+        : 5.0;
 
     // Overall Score calculation (average of non-empty categories)
-    const evaluatedCategoryScores = [healthScore, profitScore, growthScore, valScore, capScore];
-    const overallScore = Math.round((evaluatedCategoryScores.reduce((a, b) => a + b, 0) / evaluatedCategoryScores.length) * 10) / 10;
+    const evaluatedCategoryScores = [
+      healthScore,
+      profitScore,
+      growthScore,
+      valScore,
+      capScore,
+    ];
+    const overallScore =
+      Math.round(
+        (evaluatedCategoryScores.reduce((a, b) => a + b, 0) /
+          evaluatedCategoryScores.length) *
+          10,
+      ) / 10;
 
     const dataCompletenessPercent = Math.round(
       (availableMetricCount / Math.max(1, evaluatedMetricCount)) * 100,
@@ -304,14 +368,46 @@ export class ScoreEngine {
 
     // Build the 8 exact fundamental card strings for the UI
     const fundamentalCards: FundamentalCardsReport = {
-      revenueGrowth: revenueGrowth !== null ? `${revenueGrowth}% YoY (${growthScore >= 7.5 ? 'Strong' : 'Moderate'})` : revenueCr !== null ? `₹${revenueCr} Cr Scale` : 'Not Available',
-      profitGrowth: profitGrowth !== null ? `${profitGrowth}% YoY (${profitScore >= 7.5 ? 'Solid' : 'Stable'})` : netProfitCr !== null ? `₹${netProfitCr} Cr Net` : 'Not Available',
-      roe: roe !== null ? `${roe}% (${roe >= 15 ? 'High' : 'Moderate'})` : opMargin !== null ? `${Math.round(opMargin * 1.1)}% (Est ROE)` : 'Not Available',
-      roce: roce !== null ? `${roce}% (${roce >= 18 ? 'Strong' : 'Stable'})` : opMargin !== null ? `${Math.round(opMargin * 1.3)}% (Est ROCE)` : 'Not Available',
-      debt: debtToEquity !== null ? `Debt/Eq: ${debtToEquity} (${debtToEquity <= 0.5 ? 'Low Debt' : debtToEquity <= 1.0 ? 'Moderate' : 'High Debt'})` : 'Not Available',
-      valuation: peRatio !== null ? `P/E: ${peRatio}x (${valScore >= 7.5 ? 'Fair' : 'Premium'})` : 'Not Available',
-      businessQuality: opMargin !== null ? `Op Margin: ${opMargin}% (${profitScore >= 7.5 ? 'High Moat' : 'Stable'})` : 'Not Available',
-      managementQuality: roce !== null || roe !== null ? `ROE ${roe !== null ? roe : 'N/A'}%, ROCE ${roce !== null ? roce : 'N/A'}%` : 'Not Available',
+      revenueGrowth:
+        revenueGrowth !== null
+          ? `${revenueGrowth}% YoY (${growthScore >= 7.5 ? 'Strong' : 'Moderate'})`
+          : revenueCr !== null
+            ? `₹${revenueCr} Cr Scale`
+            : 'Not Available',
+      profitGrowth:
+        profitGrowth !== null
+          ? `${profitGrowth}% YoY (${profitScore >= 7.5 ? 'Solid' : 'Stable'})`
+          : netProfitCr !== null
+            ? `₹${netProfitCr} Cr Net`
+            : 'Not Available',
+      roe:
+        roe !== null
+          ? `${roe}% (${roe >= 15 ? 'High' : 'Moderate'})`
+          : opMargin !== null
+            ? `${Math.round(opMargin * 1.1)}% (Est ROE)`
+            : 'Not Available',
+      roce:
+        roce !== null
+          ? `${roce}% (${roce >= 18 ? 'Strong' : 'Stable'})`
+          : opMargin !== null
+            ? `${Math.round(opMargin * 1.3)}% (Est ROCE)`
+            : 'Not Available',
+      debt:
+        debtToEquity !== null
+          ? `Debt/Eq: ${debtToEquity} (${debtToEquity <= 0.5 ? 'Low Debt' : debtToEquity <= 1.0 ? 'Moderate' : 'High Debt'})`
+          : 'Not Available',
+      valuation:
+        peRatio !== null
+          ? `P/E: ${peRatio}x (${valScore >= 7.5 ? 'Fair' : 'Premium'})`
+          : 'Not Available',
+      businessQuality:
+        opMargin !== null
+          ? `Op Margin: ${opMargin}% (${profitScore >= 7.5 ? 'High Moat' : 'Stable'})`
+          : 'Not Available',
+      managementQuality:
+        roce !== null || roe !== null
+          ? `ROE ${roe !== null ? roe : 'N/A'}%, ROCE ${roce !== null ? roce : 'N/A'}%`
+          : 'Not Available',
     };
 
     // Strict null policy: never invent a score when too much data is missing.
@@ -418,28 +514,38 @@ export class ScoreEngine {
           weight: 0.25,
           availableMetrics: healthAvailable,
           missingMetrics: healthMissing,
-          assessment: healthScore >= 7.5 ? 'Strong balance sheet with controlled leverage' : 'Leverage requires monitoring',
+          assessment:
+            healthScore >= 7.5
+              ? 'Strong balance sheet with controlled leverage'
+              : 'Leverage requires monitoring',
         },
         profitability: {
           score: profitScore,
           weight: 0.25,
           availableMetrics: profitAvailable,
           missingMetrics: profitMissing,
-          assessment: profitScore >= 7.5 ? 'Healthy operating leverage & positive margins' : 'Margin expansion in progress',
+          assessment:
+            profitScore >= 7.5
+              ? 'Healthy operating leverage & positive margins'
+              : 'Margin expansion in progress',
         },
         growth: {
           score: growthScore,
           weight: 0.2,
           availableMetrics: growthAvailable,
           missingMetrics: growthMissing,
-          assessment: 'Top-line and earnings growth trend evaluated from live provider filings',
+          assessment:
+            'Top-line and earnings growth trend evaluated from live provider filings',
         },
         valuation: {
           score: valScore,
           weight: 0.15,
           availableMetrics: valAvailable,
           missingMetrics: valMissing,
-          assessment: valScore >= 7.5 ? 'Favorable valuation relative to growth' : 'Trading at premium growth multiple',
+          assessment:
+            valScore >= 7.5
+              ? 'Favorable valuation relative to growth'
+              : 'Trading at premium growth multiple',
         },
         capitalEfficiency: {
           score: capScore,

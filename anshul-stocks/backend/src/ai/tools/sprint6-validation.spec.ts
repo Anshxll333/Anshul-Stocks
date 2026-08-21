@@ -51,7 +51,7 @@ Score: 8.4 / 10 | BUY
 ### 📊 Live Financial Highlights
 ### 🎯 Actionable Trading & Investing Setup
 scale in gradually on market pullbacks
-### 🧠 Mentor's Deep-Dive Analysis`
+### 🧠 Mentor's Deep-Dive Analysis`,
               }),
             }),
           },
@@ -211,9 +211,7 @@ scale in gradually on market pullbacks
                   if (listQuery) {
                     return {
                       type: 'list',
-                      items: [
-                        { companyName: 'Indo-Nim', status: 'upcoming' },
-                      ],
+                      items: [{ companyName: 'Indo-Nim', status: 'upcoming' }],
                     };
                   }
                   if ((companyName || '').toLowerCase().includes('indo-nim')) {
@@ -413,7 +411,9 @@ scale in gradually on market pullbacks
       },
     ];
 
-    const res = await providerManager.getAiProvider().generateCompletion(mockMessages);
+    const res = await providerManager
+      .getAiProvider()
+      .generateCompletion(mockMessages);
     const text = res.content;
 
     // Verify mandatory section order

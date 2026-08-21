@@ -25,10 +25,9 @@ export class IpoSchedulerService implements OnModuleInit {
     // Initial sync 10s after boot. Delayed + fire-and-forget so a FinAPI outage
     // can never block or crash NestJS startup.
     const timer = setTimeout(() => {
-      this.runSync()
-        .catch(() => {
-          /* handled inside runSync */
-        });
+      this.runSync().catch(() => {
+        /* handled inside runSync */
+      });
     }, 10_000);
     if (typeof timer.unref === 'function') {
       timer.unref();

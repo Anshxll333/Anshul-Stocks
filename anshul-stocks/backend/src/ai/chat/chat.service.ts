@@ -85,7 +85,9 @@ export class ChatService {
     userMessage: string,
     requestId: string,
     conversationId: number | null,
-    timeoutMs = process.env.TOOL_ROUTING_TIMEOUT_MS ? parseInt(process.env.TOOL_ROUTING_TIMEOUT_MS) : 35000,
+    timeoutMs = process.env.TOOL_ROUTING_TIMEOUT_MS
+      ? parseInt(process.env.TOOL_ROUTING_TIMEOUT_MS)
+      : 35000,
   ): Promise<ToolRoutingDecision> {
     let timeoutId: NodeJS.Timeout | undefined;
     const timeoutPromise = new Promise<ToolRoutingDecision>((resolve) => {
@@ -139,10 +141,7 @@ export class ChatService {
         .select()
         .from(messages)
         .where(
-          and(
-            eq(messages.conversationId, c.id),
-            eq(messages.role, 'user'),
-          ),
+          and(eq(messages.conversationId, c.id), eq(messages.role, 'user')),
         )
         .orderBy(desc(messages.createdAt))
         .limit(1);
@@ -282,7 +281,9 @@ export class ChatService {
       prompt,
       requestId,
       convId,
-      process.env.TOOL_ROUTING_TIMEOUT_MS ? parseInt(process.env.TOOL_ROUTING_TIMEOUT_MS) : 35000,
+      process.env.TOOL_ROUTING_TIMEOUT_MS
+        ? parseInt(process.env.TOOL_ROUTING_TIMEOUT_MS)
+        : 35000,
     );
 
     // 4. Assemble Context Window

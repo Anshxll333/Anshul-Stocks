@@ -41,5 +41,8 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.0",
     "vite": "^8.1.1"
-  }
+  },
+  "description": "Frontend for Anshul Stocks",
+  "author": "Anshul",
+  "repository": "https://github.com/Anshxll333/Anshul-Stocks"
 }

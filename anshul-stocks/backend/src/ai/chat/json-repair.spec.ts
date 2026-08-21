@@ -10,19 +10,26 @@ describe('json-repair', () => {
       const content =
         'Here is your analysis:\n```json\n{"type": "stock", "companyName": "Bank of India Limited"}\n```\nEnjoy!';
       const result = extractBalancedDecisionJson(content);
-      expect(result).toBe('{"type": "stock", "companyName": "Bank of India Limited"}');
+      expect(result).toBe(
+        '{"type": "stock", "companyName": "Bank of India Limited"}',
+      );
     });
 
     it('returns null when the object is truncated (unbalanced)', () => {
-      const content = '{"type": "stock", "companyName": "Bank of India Limited", "key": "unclosed';
+      const content =
+        '{"type": "stock", "companyName": "Bank of India Limited", "key": "unclosed';
       expect(extractBalancedDecisionJson(content)).toBeNull();
     });
   });
 
   describe('repairTruncatedJsonObject', () => {
     it('closes open braces after a complete trailing value', () => {
-      const repaired = repairTruncatedJsonObject('{"type": "stock", "companyName": "X", "rating": 7.5');
-      expect(repaired).toBe('{"type": "stock", "companyName": "X", "rating": 7.5}');
+      const repaired = repairTruncatedJsonObject(
+        '{"type": "stock", "companyName": "X", "rating": 7.5',
+      );
+      expect(repaired).toBe(
+        '{"type": "stock", "companyName": "X", "rating": 7.5}',
+      );
       expect(JSON.parse(repaired!).type).toBe('stock');
     });
 
@@ -46,7 +53,9 @@ describe('json-repair', () => {
     });
 
     it('closes an unclosed array', () => {
-      const repaired = repairTruncatedJsonObject('{"type": "stock", "keyRisks": ["Risk 1", "Risk 2"');
+      const repaired = repairTruncatedJsonObject(
+        '{"type": "stock", "keyRisks": ["Risk 1", "Risk 2"',
+      );
       expect(repaired).not.toBeNull();
       expect(JSON.parse(repaired!).keyRisks).toEqual(['Risk 1', 'Risk 2']);
     });
@@ -58,7 +67,8 @@ describe('json-repair', () => {
 
   describe('repairDecisionJsonBlock', () => {
     it('leaves a complete, parseable response unchanged', () => {
-      const input = '```json\n{"type": "stock", "companyName": "X"}\n```\n\nAll good.';
+      const input =
+        '```json\n{"type": "stock", "companyName": "X"}\n```\n\nAll good.';
       expect(repairDecisionJsonBlock(input)).toBe(input);
     });
 
@@ -70,14 +80,18 @@ describe('json-repair', () => {
       expect(repaired).toContain('"type": "stock"');
       // Repaired JSON must be parseable somewhere in the output
       const parsed = JSON.parse(
-        repaired.substring(repaired.indexOf('{'), repaired.lastIndexOf('}') + 1),
+        repaired.substring(
+          repaired.indexOf('{'),
+          repaired.lastIndexOf('}') + 1,
+        ),
       );
       expect(parsed.companyName).toBe('Bank of India Limited');
       expect(parsed.currentPrice).toBe('₹145.00');
     });
 
     it('closes a dangling code fence after repair', () => {
-      const input = '```json\n{"type": "ipo", "companyName": "IPO Co", "finalVerdict": "Truncated verdict';
+      const input =
+        '```json\n{"type": "ipo", "companyName": "IPO Co", "finalVerdict": "Truncated verdict';
       const repaired = repairDecisionJsonBlock(input);
       const fenceCount = (repaired.match(/```/g) || []).length;
       expect(fenceCount % 2).toBe(0);

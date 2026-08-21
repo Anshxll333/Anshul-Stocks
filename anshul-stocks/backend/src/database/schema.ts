@@ -346,10 +346,9 @@ export const ipoData = pgTable(
     lockInEndDateAnchor50: varchar('lock_in_end_date_anchor_50', {
       length: 50,
     }),
-    lockInEndDateAnchorRemaining: varchar(
-      'lock_in_end_date_anchor_remaining',
-      { length: 50 },
-    ),
+    lockInEndDateAnchorRemaining: varchar('lock_in_end_date_anchor_remaining', {
+      length: 50,
+    }),
     registrar: varchar('registrar', { length: 255 }),
     retailQuota: varchar('retail_quota', { length: 100 }),
     qibQuota: varchar('qib_quota', { length: 100 }),

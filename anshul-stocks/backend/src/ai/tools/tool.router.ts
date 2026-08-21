@@ -25,7 +25,10 @@ export interface ToolRoutingDecision {
 export class ToolRouter {
   private readonly logger = new Logger(ToolRouter.name);
   // Simple in-memory cache for stock data (TTL: 60 seconds)
-  private readonly stockCache = new Map<string, { data: any; timestamp: number }>();
+  private readonly stockCache = new Map<
+    string,
+    { data: any; timestamp: number }
+  >();
   private readonly CACHE_TTL_MS = 60000;
 
   constructor(
@@ -131,13 +134,16 @@ export class ToolRouter {
             detection.intent === 'financial_ratios'
               ? this.financialTool.metadata.name
               : this.stockTool.metadata.name;
-          const symbol = detection.targetSymbol || userMessage.trim().split(/\s+/).pop()?.toUpperCase() || '';
+          const symbol =
+            detection.targetSymbol ||
+            userMessage.trim().split(/\s+/).pop()?.toUpperCase() ||
+            '';
           if (!symbol) break;
 
           // Check cache first for stock data
           const cachedData = this.getCachedStockData(symbol);
           let stockRes, financialRes, newsRes;
-          
+
           if (cachedData) {
             // Use cached stock data, only fetch financial and news
             stockRes = { data: cachedData };
@@ -166,20 +172,35 @@ export class ToolRouter {
           const mergedFinancials = {
             ...profileData,
             ...finData,
-            revenueGrowthPercent: finData.revenueGrowthPercent ?? profileData.revenueGrowthPercent ?? profileData.revenueGrowth ?? null,
-            profitGrowthPercent: finData.profitGrowthPercent ?? profileData.profitGrowthPercent ?? profileData.earningsGrowth ?? null,
+            revenueGrowthPercent:
+              finData.revenueGrowthPercent ??
+              profileData.revenueGrowthPercent ??
+              profileData.revenueGrowth ??
+              null,
+            profitGrowthPercent:
+              finData.profitGrowthPercent ??
+              profileData.profitGrowthPercent ??
+              profileData.earningsGrowth ??
+              null,
             roe: finData.roe ?? profileData.roe ?? null,
             roce: finData.roce ?? profileData.roce ?? profileData.roa ?? null,
-            debtToEquity: finData.debtToEquity ?? profileData.debtToEquity ?? null,
+            debtToEquity:
+              finData.debtToEquity ?? profileData.debtToEquity ?? null,
             peRatio: finData.peRatio ?? profileData.peRatio ?? null,
             pbRatio: finData.pbRatio ?? profileData.pbRatio ?? null,
-            operatingMargin: finData.operatingMargin ?? profileData.operatingMargin ?? null,
+            operatingMargin:
+              finData.operatingMargin ?? profileData.operatingMargin ?? null,
             netMargin: finData.netMargin ?? profileData.netMargin ?? null,
             revenueCr: finData.revenueCr ?? profileData.revenueCr ?? null,
             netProfitCr: finData.netProfitCr ?? profileData.netProfitCr ?? null,
             eps: finData.eps ?? profileData.eps ?? null,
-            dividendYield: finData.dividendYield ?? profileData.dividendYield ?? null,
-            marketCapCr: profileData.marketCapCr ?? (profileData.marketCap ? Math.round(profileData.marketCap / 10000000) : null),
+            dividendYield:
+              finData.dividendYield ?? profileData.dividendYield ?? null,
+            marketCapCr:
+              profileData.marketCapCr ??
+              (profileData.marketCap
+                ? Math.round(profileData.marketCap / 10000000)
+                : null),
           };
 
           const scoreReport = this.scoreEngine.calculateScore(
@@ -194,14 +215,17 @@ export class ToolRouter {
             exchange: profileData.exchange || 'NSE',
             sector: profileData.sector || 'N/A',
             industry: profileData.industry || 'N/A',
-            currentPrice: quoteData.currentPrice ?? profileData.currentPrice ?? null,
+            currentPrice:
+              quoteData.currentPrice ?? profileData.currentPrice ?? null,
             open: quoteData.open ?? null,
             high: quoteData.high ?? null,
             low: quoteData.low ?? null,
-            high52w: profileData.fiftyTwoWeekHigh ?? profileData.high52w ?? null,
+            high52w:
+              profileData.fiftyTwoWeekHigh ?? profileData.high52w ?? null,
             low52w: profileData.fiftyTwoWeekLow ?? profileData.low52w ?? null,
             volume: quoteData.volume ?? null,
-            changePercent: quoteData.percentChange ?? quoteData.changePercent ?? null,
+            changePercent:
+              quoteData.percentChange ?? quoteData.changePercent ?? null,
             marketCapCr: mergedFinancials.marketCapCr,
             peRatio: mergedFinancials.peRatio,
             pbRatio: mergedFinancials.pbRatio,
@@ -221,7 +245,11 @@ export class ToolRouter {
             lastUpdated: new Date().toISOString(),
           };
 
-          const hasValidPriceOrProfile = !!(quoteData.currentPrice || profileData.name || profileData.companyName);
+          const hasValidPriceOrProfile = !!(
+            quoteData.currentPrice ||
+            profileData.name ||
+            profileData.companyName
+          );
 
           if (!hasValidPriceOrProfile) {
             contextString = `[LIVE DATA UNAVAILABLE]: Live exchange metrics are currently unavailable for '${symbol}'. Please ask the user to verify the exact stock ticker (e.g. BANKBARODA for Bank of Baroda, RELIANCE, TCS). Do NOT output a stock decision card JSON. Respond politely in text.`;
@@ -245,17 +273,22 @@ export class ToolRouter {
           // canonical current-IPO name from the prompt against PostgreSQL so the
           // AI always receives the same real DB row for the same IPO.
           if (!listQuery && companyName) {
-            const suspicious =
-              /\b(grey|market|premium|total|multiple|its|gmp|subscription|status|price|band|lot|detail|review|analysis|should|apply|invest|buy|overall|current|live|upcoming|open|available|number)\b/i.test(
-                companyName,
+            // ALWAYS try to match the canonical current-IPO name from the raw prompt first,
+            // because the intent-detector's extraction is heuristic and often leaves verbs
+            // like "Analyze" or "evaluate" attached to the company name, causing cache misses.
+            const canonical = await this.ipoTool.matchCurrentIpo(userMessage);
+            if (canonical) {
+              this.logger.log(
+                `[ToolRouter] ipo_details resolved canonical name: "${companyName}" -> "${canonical}"`,
               );
-            if (suspicious) {
-              const canonical = await this.ipoTool.matchCurrentIpo(userMessage);
-              if (canonical) {
-                this.logger.log(
-                  `[ToolRouter] ipo_details rescue: "${companyName}" -> "${canonical}"`,
+              companyName = canonical;
+            } else {
+              const suspicious =
+                /\b(grey|market|premium|total|multiple|its|gmp|subscription|status|price|band|lot|detail|review|analysis|should|apply|invest|buy|overall|current|live|upcoming|open|available|number)\b/i.test(
+                  companyName,
                 );
-                companyName = canonical;
+              if (suspicious) {
+                this.logger.warn(`[ToolRouter] ipo_details company name "${companyName}" is suspicious but no canonical match was found.`);
               }
             }
           }
@@ -288,7 +321,7 @@ export class ToolRouter {
                 gmpGainPercent: ipo.gmpGainPercent ?? null,
                 totalSub: ipo.totalSub ?? null,
               }));
-              contextString = `[GROUND TRUTH LIVE IPO LIST JSON FROM POSTGRESQL]:\n${JSON.stringify(compactItems, null, 2)}\nAnswer the user's IPO list question using ONLY the IPOs in this JSON list. For every IPO include: company name, symbol, status, price range/band, lot size, issue size (₹ Cr), open/close/listing dates, GMP (or "Not available"), subscription multiple (or "Not available").`;
+              contextString = `[GROUND TRUTH LIVE IPO LIST JSON FROM POSTGRESQL]:\n${JSON.stringify(compactItems, null, 2)}`;
             }
           } else {
             const ipo: any = data.ipo || {};

@@ -28,7 +28,8 @@ export class DebugController {
       timestamp: new Date().toISOString(),
       diagnostics: {
         configuredModel:
-          this.configService.get<string>('ai.defaultModel') || process.env.AI_MODEL,
+          this.configService.get<string>('ai.defaultModel') ||
+          process.env.AI_MODEL,
         hasApiKey: !!(
           process.env.OPENAI_API_KEY &&
           process.env.OPENAI_API_KEY !== 'your_openai_api_key_here'

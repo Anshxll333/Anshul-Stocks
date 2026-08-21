@@ -103,5 +103,3 @@ When a [GROUND TRUTH IPO PROSPECTUS JSON FROM POSTGRESQL ...] or [GROUND TRUTH L
 3. **IPO LIST QUERIES**: For "current/live/upcoming IPOs" questions, respond in concise clean Markdown (company name, status, price band, lot size, issue size, dates, GMP/subscription or "Not available") using ONLY the IPOs from the block. Do NOT wrap a list response inside the IPO decision-card JSON.
 
 For general non-stock/non-IPO queries (e.g., "What is P/E ratio?"), respond concisely in clean Markdown without JSON wrappers.`;
-
-

@@ -83,10 +83,18 @@ export class YahooFinanceProvider implements IMarketProvider {
 
   private formatSymbol(symbol: string): string {
     let clean = symbol.trim().toUpperCase();
-    if (clean.includes('BARODA') || clean.includes('BANKOFBARODA') || clean.includes('BANK OF BARODA')) return 'BANKBARODA.NS';
-    if (clean.includes('COPPER') || clean.includes('HINDUSTANCOPPER')) return 'HINDCOPPER.NS';
-    if (clean.includes('TATASTEEL') || clean.includes('TATA STEEL')) return 'TATASTEEL.NS';
-    if (clean.includes('COALINDIA') || clean.includes('COAL INDIA')) return 'COALINDIA.NS';
+    if (
+      clean.includes('BARODA') ||
+      clean.includes('BANKOFBARODA') ||
+      clean.includes('BANK OF BARODA')
+    )
+      return 'BANKBARODA.NS';
+    if (clean.includes('COPPER') || clean.includes('HINDUSTANCOPPER'))
+      return 'HINDCOPPER.NS';
+    if (clean.includes('TATASTEEL') || clean.includes('TATA STEEL'))
+      return 'TATASTEEL.NS';
+    if (clean.includes('COALINDIA') || clean.includes('COAL INDIA'))
+      return 'COALINDIA.NS';
 
     clean = clean.replace(/\s+/g, '');
     clean = clean.replace(/\.NSE$/i, '.NS').replace(/\.BSE$/i, '.BO');
@@ -196,7 +204,9 @@ export class YahooFinanceProvider implements IMarketProvider {
         const searchRes = await this.searchCompanies(symbol);
         if (searchRes && searchRes.length > 0 && searchRes[0].symbol) {
           activeSym = searchRes[0].symbol;
-          this.logger.log(`[YahooFinance] Resolved '${symbol}' -> '${activeSym}' via Search API`);
+          this.logger.log(
+            `[YahooFinance] Resolved '${symbol}' -> '${activeSym}' via Search API`,
+          );
           chartResult = await this.fetchChartData(activeSym);
         } else {
           throw err1;

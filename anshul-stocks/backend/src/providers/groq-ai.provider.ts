@@ -43,7 +43,9 @@ export class GroqProvider implements IAiProvider, OnModuleInit {
     this.logger.log(`Loaded AI Provider: Groq`);
     this.logger.log(`Loaded AI Model: ${this.defaultModel}`);
     this.logger.log(`Loaded Vision Model: ${this.visionModel}`);
-    this.logger.log(`AI Provider configured for fast responses with optimized settings`);
+    this.logger.log(
+      `AI Provider configured for fast responses with optimized settings`,
+    );
     const maskedKey = this.apiKey
       ? `${this.apiKey.substring(0, 4)}...${this.apiKey.substring(this.apiKey.length - 4)}`
       : 'None';

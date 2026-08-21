@@ -89,9 +89,7 @@ export class IpoSyncService {
 
     try {
       this.logger.log('[IPO SYNC] Starting IPO synchronization');
-      this.logger.log(
-        `[IPO SYNC] Fetching data from ${this.providerLabel}`,
-      );
+      this.logger.log(`[IPO SYNC] Fetching data from ${this.providerLabel}`);
 
       const records = await this.ipoProvider.getLiveIpos();
       if (!records || records.length === 0) {
@@ -373,8 +371,7 @@ export class IpoSyncService {
       shareCredit: dto.shareCredit || null,
       mandateEndDate: dto.mandateEndDate || null,
       lockInEndDateAnchor50: dto.lockInEndDateAnchor50 || null,
-      lockInEndDateAnchorRemaining:
-        dto.lockInEndDateAnchorRemaining || null,
+      lockInEndDateAnchorRemaining: dto.lockInEndDateAnchorRemaining || null,
       registrar: dto.registrar || null,
       retailQuota: dto.retailQuota || null,
       qibQuota: dto.qibQuota || null,
@@ -631,9 +628,7 @@ export class IpoSyncService {
     for (const p of parts) {
       if (p.type !== 'literal') map[p.type] = p.value;
     }
-    return (
-      Number(map.year) * 10000 + Number(map.month) * 100 + Number(map.day)
-    );
+    return Number(map.year) * 10000 + Number(map.month) * 100 + Number(map.day);
   }
 
   /**
@@ -664,12 +659,24 @@ export class IpoSyncService {
     }
 
     const MONTHS: Record<string, number> = {
-      jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
-      jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+      jan: 1,
+      feb: 2,
+      mar: 3,
+      apr: 4,
+      may: 5,
+      jun: 6,
+      jul: 7,
+      aug: 8,
+      sep: 9,
+      oct: 10,
+      nov: 11,
+      dec: 12,
     };
 
     // 'Nov 27, 2024'
-    m = raw.match(/^([a-zA-Z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/);
+    m = raw.match(
+      /^([a-zA-Z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/,
+    );
     if (m) {
       const mo = MONTHS[m[1].toLowerCase().slice(0, 3)];
       const d = Number(m[2]);
@@ -719,12 +726,35 @@ export class IpoSyncService {
 
     // Strong chat-signal phrases — real IPO company names never contain these.
     const chatPhrases = [
-      ' tell me ', ' what are ', ' what is ', ' why ', ' how ',
-      ' should i ', ' should we ', ' can you ', ' evaluate ', ' give me ',
-      ' i think ', ' okay', ' okey', ' please ', ' is it ', ' but when ',
-      ' apply for ', ' apply in ', ' warning signs', ' ratios to check',
-      ' the current ', ' top 5 ', ' top 3 ', ' you are my ', ' same question',
-      ' in this ', ' about the ', ' current ipos', ' i already ',
+      ' tell me ',
+      ' what are ',
+      ' what is ',
+      ' why ',
+      ' how ',
+      ' should i ',
+      ' should we ',
+      ' can you ',
+      ' evaluate ',
+      ' give me ',
+      ' i think ',
+      ' okay',
+      ' okey',
+      ' please ',
+      ' is it ',
+      ' but when ',
+      ' apply for ',
+      ' apply in ',
+      ' warning signs',
+      ' ratios to check',
+      ' the current ',
+      ' top 5 ',
+      ' top 3 ',
+      ' you are my ',
+      ' same question',
+      ' in this ',
+      ' about the ',
+      ' current ipos',
+      ' i already ',
     ];
     for (const phrase of chatPhrases) {
       if (lower.includes(phrase)) return true;
@@ -732,14 +762,79 @@ export class IpoSyncService {
 
     // Fallback: 3+ conversational stopwords in a multi-word name.
     const stop = new Set([
-      'tell', 'me', 'my', 'you', 'your', 'what', 'why', 'how', 'should',
-      'would', 'can', 'could', 'are', 'is', 'the', 'but', 'when', 'about',
-      'give', 'ask', 'evaluate', 'think', 'current', 'top', 'warning', 'signs',
-      'ratio', 'check', 'okay', 'ok', 'please', 'this', 'that', 'in', 'for',
-      'it', 'i', 'we', 'they', 'then', 'so', 'there', 'not', 'any', 'same',
-      'question', 'another', 'apply', 'buy', 'know', 'want', 'need', 'get',
-      'from', 'with', 'some', 'these', 'those', 'has', 'have', 'was', 'were',
-      'will', 'do', 'does', 'did', 'of', 'to', 'a', 'an', 'if', 'or', 'and',
+      'tell',
+      'me',
+      'my',
+      'you',
+      'your',
+      'what',
+      'why',
+      'how',
+      'should',
+      'would',
+      'can',
+      'could',
+      'are',
+      'is',
+      'the',
+      'but',
+      'when',
+      'about',
+      'give',
+      'ask',
+      'evaluate',
+      'think',
+      'current',
+      'top',
+      'warning',
+      'signs',
+      'ratio',
+      'check',
+      'okay',
+      'ok',
+      'please',
+      'this',
+      'that',
+      'in',
+      'for',
+      'it',
+      'i',
+      'we',
+      'they',
+      'then',
+      'so',
+      'there',
+      'not',
+      'any',
+      'same',
+      'question',
+      'another',
+      'apply',
+      'buy',
+      'know',
+      'want',
+      'need',
+      'get',
+      'from',
+      'with',
+      'some',
+      'these',
+      'those',
+      'has',
+      'have',
+      'was',
+      'were',
+      'will',
+      'do',
+      'does',
+      'did',
+      'of',
+      'to',
+      'a',
+      'an',
+      'if',
+      'or',
+      'and',
       'its',
     ]);
     const words = lower
