@@ -1,14 +1,36 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { DRIZZLE_CONNECTION } from '../database/database.module';
 import type { DrizzleDB } from '../database/database.module';
-import { conversations, messages } from '../database/schema';
+import { conversations, messages, users } from '../database/schema';
 import { eq, desc } from 'drizzle-orm';
 
 @Injectable()
 export class ConversationsService {
   constructor(@Inject(DRIZZLE_CONNECTION) private readonly db: DrizzleDB) {}
 
-  async getUserConversations(userId: number) {
+  async resolveVisitor(visitorId: string): Promise<number> {
+    const email = `visitor_${visitorId}@anshulstocks.com`;
+    const [existing] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+    if (!existing) {
+      const [newUser] = await this.db
+        .insert(users)
+        .values({
+          email,
+          passwordHash: 'secure_visitor_hash',
+          fullName: 'Anonymous Visitor',
+        })
+        .returning();
+      return newUser.id;
+    }
+    return existing.id;
+  }
+
+  async getUserConversations(visitorId: string) {
+    const userId = await this.resolveVisitor(visitorId);
     return this.db
       .select()
       .from(conversations)
@@ -16,7 +38,8 @@ export class ConversationsService {
       .orderBy(desc(conversations.updatedAt));
   }
 
-  async getConversationById(id: number, userId: number) {
+  async getConversationById(id: number, visitorId: string) {
+    const userId = await this.resolveVisitor(visitorId);
     const [conv] = await this.db
       .select()
       .from(conversations)
@@ -38,7 +61,8 @@ export class ConversationsService {
     };
   }
 
-  async createConversation(userId: number, title?: string) {
+  async createConversation(visitorId: string, title?: string) {
+    const userId = await this.resolveVisitor(visitorId);
     const [conv] = await this.db
       .insert(conversations)
       .values({
@@ -74,8 +98,9 @@ export class ConversationsService {
     return msg;
   }
 
-  async renameConversationTitle(id: number, userId: number, title: string) {
-    await this.getConversationById(id, userId);
+  async renameConversationTitle(id: number, visitorId: string, title: string) {
+    const userId = await this.resolveVisitor(visitorId);
+    await this.getConversationById(id, visitorId);
     const [updated] = await this.db
       .update(conversations)
       .set({ title, updatedAt: new Date() })
@@ -84,8 +109,9 @@ export class ConversationsService {
     return updated;
   }
 
-  async deleteConversation(id: number, userId: number) {
-    await this.getConversationById(id, userId);
+  async deleteConversation(id: number, visitorId: string) {
+    const userId = await this.resolveVisitor(visitorId);
+    await this.getConversationById(id, visitorId);
     await this.db.delete(conversations).where(eq(conversations.id, id));
     return { success: true, message: 'Conversation deleted successfully' };
   }

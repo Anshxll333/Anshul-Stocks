@@ -35,23 +35,25 @@ export class ChatService {
     return false;
   }
 
-  private async ensureUser(userId: number): Promise<void> {
+  async resolveVisitor(visitorId: string): Promise<number> {
+    const email = `visitor_${visitorId}@anshulstocks.com`;
     const [existing] = await this.db
       .select()
       .from(users)
-      .where(eq(users.id, userId))
+      .where(eq(users.email, email))
       .limit(1);
     if (!existing) {
-      await this.db
+      const [newUser] = await this.db
         .insert(users)
         .values({
-          id: userId,
-          email: 'investor@anshulstocks.com',
-          passwordHash: 'secure_investor_hash',
-          fullName: 'Anshul Stocks Investor',
+          email,
+          passwordHash: 'secure_visitor_hash',
+          fullName: 'Anonymous Visitor',
         })
-        .onConflictDoNothing();
+        .returning();
+      return newUser.id;
     }
+    return existing.id;
   }
 
   /**
@@ -156,7 +158,7 @@ export class ChatService {
   }
 
   async processChatMessage(
-    userId: number,
+    visitorId: string,
     conversationId: number | null,
     prompt: string,
     requestIdArg?: string,
@@ -173,7 +175,7 @@ export class ChatService {
       throw new Error(`Duplicate request detected: ${requestId}`);
     }
 
-    await this.ensureUser(userId);
+    const userId = await this.resolveVisitor(visitorId);
 
     // 1. Find or create conversation
     let convId = conversationId;
@@ -369,7 +371,7 @@ export class ChatService {
   }
 
   async processChatStream(
-    userId: number,
+    visitorId: string,
     conversationId: number | null,
     prompt: string,
     requestIdArg?: string,
@@ -391,7 +393,7 @@ export class ChatService {
       throw new Error(`Duplicate stream request detected: ${requestId}`);
     }
 
-    await this.ensureUser(userId);
+    const userId = await this.resolveVisitor(visitorId);
 
     let activeId = conversationId;
     if (!activeId) {
@@ -589,8 +591,9 @@ export class ChatService {
     };
   }
 
-  async getRecentConversations(userId: number) {
+  async getRecentConversations(visitorId: string) {
     try {
+      const userId = await this.resolveVisitor(visitorId);
       const convs = await this.db
         .select()
         .from(conversations)
@@ -622,7 +625,7 @@ export class ChatService {
       return result;
     } catch (err: any) {
       this.logger.error(
-        `Failed to fetch conversations for user ${userId}: ${err.message}`,
+        `Failed to fetch conversations for user ${visitorId}: ${err.message}`,
       );
       return [];
     }

@@ -293,7 +293,7 @@ describe('ToolRouter Integration Tests', () => {
     );
     expect(decision.contextString).toContain('Dhoot Transmission');
     expect(decision.contextString).toContain('Swiggy');
-    expect(decision.contextString).toContain('Not available');
+    expect(decision.contextString).toContain('"gmp": null');
     // Compact list projection keeps the prompt small for reliable AI generation:
     // only the 12 list-relevant fields (listingDate is injected as null even
     // though the mock row does not include it), never the full 39-field rows.
@@ -314,6 +314,6 @@ describe('ToolRouter Integration Tests', () => {
       'GROUND TRUTH IPO PROSPECTUS JSON FROM POSTGRESQL FOR Dhoot Transmission',
     );
     expect(decision.contextString).toContain('DHOOTTRANS');
-    expect(decision.contextString).toContain('Not available');
+    expect(decision.contextString).toContain('"gmp": null');
   });
 });

@@ -15,15 +15,16 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get('history')
-  async getHistory() {
-    const demoUserId = 1;
-    const history = await this.chatService.getRecentConversations(demoUserId);
+  async getHistory(@Headers('x-visitor-id') headerVisitorId?: string) {
+    const visitorId = headerVisitorId || 'anonymous_fallback';
+    const history = await this.chatService.getRecentConversations(visitorId);
     return { success: true, data: history };
   }
 
   @Post('message')
   async sendMessage(
     @Headers('x-request-id') headerRequestId?: string,
+    @Headers('x-visitor-id') headerVisitorId?: string,
     @Body('requestId') bodyRequestId?: string,
     @Body('conversationId') conversationId?: number,
     @Body('prompt') prompt?: string,
@@ -35,10 +36,10 @@ export class ChatController {
       headerRequestId ||
       bodyRequestId ||
       `req-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const demoUserId = 1;
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const convId = conversationId ? Number(conversationId) : null;
     const result = await this.chatService.processChatMessage(
-      demoUserId,
+      visitorId,
       convId,
       prompt.trim(),
       requestId,
@@ -55,6 +56,7 @@ export class ChatController {
   async streamMessage(
     @Res() res: Response,
     @Headers('x-request-id') headerRequestId?: string,
+    @Headers('x-visitor-id') headerVisitorId?: string,
     @Body('requestId') bodyRequestId?: string,
     @Body('conversationId') conversationId?: number,
     @Body('prompt') prompt?: string,
@@ -69,7 +71,7 @@ export class ChatController {
       headerRequestId ||
       bodyRequestId ||
       `req-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const demoUserId = 1;
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const convId = conversationId ? Number(conversationId) : null;
 
     // Set SSE headers
@@ -106,7 +108,7 @@ export class ChatController {
         toolRouting,
         stream,
       } = await this.chatService.processChatStream(
-        demoUserId,
+        visitorId,
         convId,
         prompt.trim(),
         requestId,

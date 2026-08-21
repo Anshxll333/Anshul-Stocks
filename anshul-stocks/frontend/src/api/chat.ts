@@ -7,6 +7,15 @@ const getApiBase = () => {
 
 const API_BASE = getApiBase();
 
+export function getVisitorId(): string {
+  let id = localStorage.getItem('visitor_device_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('visitor_device_id', id);
+  }
+  return id;
+}
+
 export interface ChatApiConversation {
   id: number;
   title: string;
@@ -67,7 +76,7 @@ export interface StreamOptions {
 
 export async function fetchConversations(): Promise<ChatApiConversation[]> {
   try {
-    const res = await axios.get(`${API_BASE}/conversations`);
+    const res = await axios.get(`${API_BASE}/conversations`, { headers: { 'x-visitor-id': getVisitorId() } });
     return res.data.data || [];
   } catch {
     return [];
@@ -76,7 +85,7 @@ export async function fetchConversations(): Promise<ChatApiConversation[]> {
 
 export async function fetchConversationById(id: number): Promise<ChatApiConversation | null> {
   try {
-    const res = await axios.get(`${API_BASE}/conversations/${id}`);
+    const res = await axios.get(`${API_BASE}/conversations/${id}`, { headers: { 'x-visitor-id': getVisitorId() } });
     return res.data.data || null;
   } catch {
     return null;
@@ -85,7 +94,7 @@ export async function fetchConversationById(id: number): Promise<ChatApiConversa
 
 export async function renameConversation(id: number, title: string): Promise<boolean> {
   try {
-    await axios.patch(`${API_BASE}/conversations/${id}`, { title });
+    await axios.patch(`${API_BASE}/conversations/${id}`, { title }, { headers: { 'x-visitor-id': getVisitorId() } });
     return true;
   } catch {
     return false;
@@ -94,7 +103,7 @@ export async function renameConversation(id: number, title: string): Promise<boo
 
 export async function deleteConversationApi(id: number): Promise<boolean> {
   try {
-    await axios.delete(`${API_BASE}/conversations/${id}`);
+    await axios.delete(`${API_BASE}/conversations/${id}`, { headers: { 'x-visitor-id': getVisitorId() } });
     return true;
   } catch {
     return false;
@@ -103,7 +112,7 @@ export async function deleteConversationApi(id: number): Promise<boolean> {
 
 export async function createNewConversation(title?: string): Promise<ChatApiConversation | null> {
   try {
-    const res = await axios.post(`${API_BASE}/conversations`, { title });
+    const res = await axios.post(`${API_BASE}/conversations`, { title }, { headers: { 'x-visitor-id': getVisitorId() } });
     return res.data.data || null;
   } catch {
     return null;
@@ -119,6 +128,7 @@ export async function uploadScreenshotApi(file: File, conversationId?: number): 
   const res = await axios.post(`${API_BASE}/upload`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      'x-visitor-id': getVisitorId(),
     },
   });
   return res.data;
@@ -241,6 +251,7 @@ async function streamChatMessageSse(options: StreamOptions): Promise<StreamTelem
       headers: {
         'Content-Type': 'application/json',
         'X-Request-ID': requestId,
+        'x-visitor-id': getVisitorId(),
       },
       body: JSON.stringify({ prompt, conversationId, requestId }),
       signal: internalAbortController.signal,
@@ -471,6 +482,7 @@ async function streamChatMessageNonStreaming(options: StreamOptions): Promise<St
       headers: {
         'Content-Type': 'application/json',
         'X-Request-ID': requestId,
+        'x-visitor-id': getVisitorId(),
       },
       body: JSON.stringify({ prompt, conversationId, requestId }),
       signal,

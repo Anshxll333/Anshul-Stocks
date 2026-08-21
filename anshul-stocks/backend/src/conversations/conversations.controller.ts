@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  Headers,
 } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 
@@ -15,29 +16,34 @@ export class ConversationsController {
   constructor(private readonly conversationsService: ConversationsService) {}
 
   @Get()
-  async getConversations() {
-    // Demo/placeholder userId = 1 for Sprint 3 readiness
-    const demoUserId = 1;
+  async getConversations(@Headers('x-visitor-id') headerVisitorId?: string) {
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const items =
-      await this.conversationsService.getUserConversations(demoUserId);
+      await this.conversationsService.getUserConversations(visitorId);
     return { success: true, data: items };
   }
 
   @Get(':id')
-  async getConversation(@Param('id', ParseIntPipe) id: number) {
-    const demoUserId = 1;
+  async getConversation(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-visitor-id') headerVisitorId?: string,
+  ) {
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const item = await this.conversationsService.getConversationById(
       id,
-      demoUserId,
+      visitorId,
     );
     return { success: true, data: item };
   }
 
   @Post()
-  async createConversation(@Body('title') title?: string) {
-    const demoUserId = 1;
+  async createConversation(
+    @Headers('x-visitor-id') headerVisitorId?: string,
+    @Body('title') title?: string,
+  ) {
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const conv = await this.conversationsService.createConversation(
-      demoUserId,
+      visitorId,
       title,
     );
     return { success: true, data: conv };
@@ -63,22 +69,26 @@ export class ConversationsController {
   async renameConversation(
     @Param('id', ParseIntPipe) id: number,
     @Body('title') title: string,
+    @Headers('x-visitor-id') headerVisitorId?: string,
   ) {
-    const demoUserId = 1;
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const updated = await this.conversationsService.renameConversationTitle(
       id,
-      demoUserId,
+      visitorId,
       title,
     );
     return { success: true, data: updated };
   }
 
   @Delete(':id')
-  async deleteConversation(@Param('id', ParseIntPipe) id: number) {
-    const demoUserId = 1;
+  async deleteConversation(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-visitor-id') headerVisitorId?: string,
+  ) {
+    const visitorId = headerVisitorId || 'anonymous_fallback';
     const res = await this.conversationsService.deleteConversation(
       id,
-      demoUserId,
+      visitorId,
     );
     return res;
   }
